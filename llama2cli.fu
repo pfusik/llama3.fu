@@ -34,7 +34,7 @@ public static class Llama2Cli
 			string? text = obj.ForwardGenerate(pos++);
 			if (text == null)
 				break;
-			Write(pos == 2 ? text.Substring(1) : text);
+			Write(pos == 2 && !obj.IsLlama3() ? text.Substring(1) : text);
 		}
 		Console.WriteLine();
 		float time = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() - startTime;

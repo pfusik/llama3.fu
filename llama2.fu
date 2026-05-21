@@ -89,7 +89,7 @@ class Transformer
 		Q = new float[Dim];
 		Att = new float[SeqLen];
 		Logits = new float[VocabSize];
-		int cacheSize = Dim * KVHeads / Heads * Layers * SeqLen;
+		nint cacheSize = n * KVHeads / Heads * SeqLen;
 		KeyCache = new float[cacheSize];
 		ValueCache = new float[cacheSize];
 	}
@@ -97,6 +97,8 @@ class Transformer
 	internal int GetVocabSize() => VocabSize;
 
 	internal int GetSeqLen() => SeqLen;
+
+	internal bool IsLlama3() => VocabSize >= 65536;
 
 	static float ExpandWeight(short i) => BitConverter.Int32BitsToSingle(i << 16);
 
@@ -124,7 +126,7 @@ class Transformer
 			x[i] /= sum;
 	}
 
-	static void MatMul(float[]! o, int oOffset, float[] x, short[] w, int wOffset, int n, int d)
+	static void MatMul(float[]! o, nint oOffset, float[] x, short[] w, int wOffset, int n, int d)
 	{
 		int i;
 #if OPENMP
@@ -147,20 +149,22 @@ class Transformer
 
 		int kvDim = Dim * KVHeads / Heads;
 		int kvMul = Heads / KVHeads;
+		nint cacheStride = SeqLen * kvDim;
 		int headSize = Dim / Heads;
+		float theta = IsLlama3() ? 500000 : 10000;
 
 		for (int l = 0; l < Layers; l++) {
 			RmsNorm(XB, X, RmsAttWeight, l * Dim, Dim);
 
-			int loff = l * SeqLen * kvDim;
-			int k = loff + pos * kvDim;
+			nint loff = l * cacheStride;
+			nint k = loff + pos * kvDim;
 			MatMul(Q, 0, XB, WQ, l * Dim * Dim, Dim, Dim);
 			MatMul(KeyCache, k, XB, WK, l * Dim * kvDim, Dim, kvDim);
 			MatMul(ValueCache, k, XB, WV, l * Dim * kvDim, Dim, kvDim);
 
 			for (int i = 0; i < Dim; i += 2) {
 				float headDim = i % headSize;
-				float freq = Math.Pow(10000, -headDim / headSize);
+				float freq = Math.Pow(theta, -headDim / headSize);
 				float val = pos * freq;
 				float fcr = Math.Cos(val);
 				float fci = Math.Sin(val);
@@ -188,7 +192,7 @@ class Transformer
 				SoftMax(Att, pos + 1);
 				XB.Fill(0, q, headSize);
 				for (int t = 0; t <= pos; t++) {
-					int v = loff + t * kvDim + h / kvMul * headSize;
+					nint v = loff + t * kvDim + h / kvMul * headSize;
 					float a = Att[t];
 					for (int i = 0; i < headSize; i++)
 						XB[q + i] += a * ValueCache[v + i];
@@ -257,6 +261,8 @@ class Tokenizer
 		}
 	}
 
+	bool IsLlama3() => VocabSize >= 65536;
+
 	public string Decode(int token) => Vocab[token];
 
 	public void SetPrompt!(string text)
@@ -267,11 +273,12 @@ class Tokenizer
 		}
 		PromptIndex = 0;
 		Prompt.Clear();
-		Prompt.Add(1); // bos
+		Prompt.Add(IsLlama3() ? 128000 : 1); // bos
 		nint length = text.Length;
 		if (length == 0)
 			return;
-		Prompt.Add(VocabToToken[" "]);
+		if (!IsLlama3())
+			Prompt.Add(VocabToToken[" "]);
 		for (nint i = 0; i < length; i++) {
 			string() s = text.Substring(i, 1);
 			if (VocabToToken.ContainsKey(s))
@@ -396,6 +403,8 @@ public class Llama2
 		loader.Close();
 	}
 
+	public bool IsLlama3() => Trans.IsLlama3();
+
 	public int GetSeqLen() => Trans.GetSeqLen();
 
 	public void SetTemperature!(float value)
@@ -422,7 +431,7 @@ public class Llama2
 	public string? ForwardGenerate!(int pos)
 	{
 		FeedPrompt();
-		if (pos != 0 && Token == 1)
+		if (pos != 0 && Token == (IsLlama3() ? 128000 : 1))
 			return null;
 		string text = pos == 0 ? "" : Tok.Decode(Token);
 		Trans.Forward(Token, pos);
@@ -433,7 +442,13 @@ public class Llama2
 
 	public void SetChatPrompt!(string prompt, string systemPrompt)
 	{
-		if (systemPrompt.Length > 0)
+		if (IsLlama3()) {
+			if (systemPrompt.Length > 0)
+				SetRawPrompt($"<|start_header_id|>system<|end_header_id|>\n\n{systemPrompt}<|eot_id|><|start_header_id|>user<|end_header_id|>\n\n{prompt}<|eot_id|><|start_header_id|>assistant<|end_header_id|>");
+			else
+				SetRawPrompt($"<|start_header_id|>user<|end_header_id|>\n\n{prompt}<|eot_id|><|start_header_id|>assistant<|end_header_id|>");
+		}
+		else if (systemPrompt.Length > 0)
 			SetRawPrompt($"[INST] <<SYS>>\n{systemPrompt}\n<</SYS>>\n\n{prompt} [/INST]");
 		else
 			SetRawPrompt($"[INST] {prompt} [/INST]");
@@ -445,9 +460,10 @@ public class Llama2
 		Trans.Forward(Token, pos);
 		if (Tok.HasPromptToken())
 			return "";
-		if (Token == 2)
+		int eot = IsLlama3() ? 128009 : 2;
+		if (Token == eot)
 			return null;
 		Token = Samp.Sample(Trans.GetLogits(), Trans.GetVocabSize());
-		return Token == 2 ? "\n" : Tok.Decode(Token);
+		return Token == eot ? "\n" : Tok.Decode(Token);
 	}
 }

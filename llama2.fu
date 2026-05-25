@@ -256,8 +256,10 @@ class Tokenizer
 					byte[1] b;
 					b[0] = c;
 					Vocab[i] = Encoding.UTF8.GetString(b, 0, 1);
+					s = Vocab[i];
 				}
 			}
+			VocabToToken[s] = i;
 		}
 	}
 
@@ -265,20 +267,25 @@ class Tokenizer
 
 	public string Decode(int token) => Vocab[token];
 
-	public void SetPrompt!(string text)
+	public void StartPrompt!()
 	{
-		if (VocabToToken.Count == 0) {
-			for (int i = 0; i < VocabSize; i++)
-				VocabToToken[Vocab[i]] = i;
-		}
 		PromptIndex = 0;
 		Prompt.Clear();
-		Prompt.Add(IsLlama3() ? 128000 : 1); // bos
+	}
+
+	public void AddPromptToken!(string s)
+	{
+		Prompt.Add(VocabToToken[s]);
+	}
+
+	public void AddPrompt!(string text)
+	{
 		nint length = text.Length;
 		if (length == 0)
 			return;
+		int startIndex = Prompt.Count;
 		if (!IsLlama3())
-			Prompt.Add(VocabToToken[" "]);
+			AddPromptToken(" ");
 		for (nint i = 0; i < length; i++) {
 			string() s = text.Substring(i, 1);
 			if (VocabToToken.ContainsKey(s))
@@ -295,7 +302,7 @@ class Tokenizer
 			float bestScore = Math.NegativeInfinity;
 			int bestId = 0;
 			int bestIdx = -1;
-			for (int i = 0; i + 1 < Prompt.Count; i++) {
+			for (int i = startIndex; i + 1 < Prompt.Count; i++) {
 				string() s = Vocab[Prompt[i]] + Vocab[Prompt[i + 1]];
 				if (VocabToToken.ContainsKey(s)) {
 					int id = VocabToToken[s];
@@ -417,9 +424,12 @@ public class Llama2
 		Samp.SetRandomSeed(value);
 	}
 
-	public void SetRawPrompt!(string prompt)
+	public void SetRawPrompt!(bool bos, string prompt)
 	{
-		Tok.SetPrompt(prompt);
+		Tok.StartPrompt();
+		if (bos)
+			Tok.AddPromptToken(IsLlama3() ? "<|begin_of_text|>" : "\n<s>\n");
+		Tok.AddPrompt(prompt);
 	}
 
 	void FeedPrompt!()
@@ -431,7 +441,7 @@ public class Llama2
 	public string? ForwardGenerate!(int pos)
 	{
 		FeedPrompt();
-		if (pos != 0 && Token == (IsLlama3() ? 128000 : 1))
+		if (pos != 0 && Token == (IsLlama3() ? 128001 : 1))
 			return null;
 		string text = pos == 0 ? "" : Tok.Decode(Token);
 		Trans.Forward(Token, pos);
@@ -440,18 +450,36 @@ public class Llama2
 		return text;
 	}
 
-	public void SetChatPrompt!(string prompt, string systemPrompt)
+	void AddLlama3Header!(string role)
+	{
+		Tok.AddPromptToken("<|start_header_id|>");
+		Tok.AddPromptToken(role);
+		Tok.AddPromptToken("<|end_header_id|>");
+		Tok.AddPromptToken("\n\n");
+	}
+
+	void AddLlama3Message!(string role, string message)
+	{
+		AddLlama3Header(role);
+		Tok.AddPrompt(message);
+		Tok.AddPromptToken("<|eot_id|>");
+	}
+
+	public void SetChatPrompt!(bool bos, string prompt, string systemPrompt)
 	{
 		if (IsLlama3()) {
+			Tok.StartPrompt();
+			if (bos)
+				Tok.AddPromptToken("<|begin_of_text|>");
 			if (systemPrompt.Length > 0)
-				SetRawPrompt($"<|start_header_id|>system<|end_header_id|>\n\n{systemPrompt}<|eot_id|><|start_header_id|>user<|end_header_id|>\n\n{prompt}<|eot_id|><|start_header_id|>assistant<|end_header_id|>");
-			else
-				SetRawPrompt($"<|start_header_id|>user<|end_header_id|>\n\n{prompt}<|eot_id|><|start_header_id|>assistant<|end_header_id|>");
+				AddLlama3Message("system", systemPrompt);
+			AddLlama3Message("user", prompt);
+			AddLlama3Header("assistant");
 		}
 		else if (systemPrompt.Length > 0)
-			SetRawPrompt($"[INST] <<SYS>>\n{systemPrompt}\n<</SYS>>\n\n{prompt} [/INST]");
+			SetRawPrompt(bos, $"[INST] <<SYS>>\n{systemPrompt}\n<</SYS>>\n\n{prompt} [/INST]");
 		else
-			SetRawPrompt($"[INST] {prompt} [/INST]");
+			SetRawPrompt(bos, $"[INST] {prompt} [/INST]");
 	}
 
 	public string? ForwardChat!(int pos)

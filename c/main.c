@@ -1,4 +1,4 @@
-// main.c - Llama 2 LLM command-line interface 
+// main.c - Llama LLM command-line interface 
 // Copyright (c) 2026 Piotr Fusik
 // SPDX-License-Identifier: MIT
 
@@ -12,7 +12,7 @@
 #include <locale.h>
 #endif
 
-#include "llama2cli.h"
+#include "llamacli.h"
 
 typedef struct {
 	void (*open)(Loader *self, const char *path);
@@ -103,5 +103,5 @@ int main(int argc, char **argv)
 		Loader_Close
 	};
 	Loader loader = { &vtbl };
-	return Llama2Cli_Run((const char *const *) argv + 1, argc - 1, &loader);
+	return LlamaCli_Run((const char *const *) argv + 1, argc - 1, &loader);
 }

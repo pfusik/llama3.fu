@@ -1,14 +1,14 @@
-// llama2cli.fu - Llama 2 LLM command-line interface in Fusion
+// llamacli.fu - Llama LLM command-line interface in Fusion
 // Copyright (c) 2023 Andrej (original C code: https://github.com/karpathy/llama2.c)
 // Copyright (c) 2026 Piotr Fusik
 // SPDX-License-Identifier: MIT
 
-public static class Llama2Cli
+public static class LlamaCli
 {
 	static void Usage()
 	{
-		Console.Error.WriteLine("Usage:   llama2fu <checkpoint> [options]");
-		Console.Error.WriteLine("Example: llama2fu model.bin -n 256 -i \"Once upon a time\"");
+		Console.Error.WriteLine("Usage:   llamafu <checkpoint> [options]");
+		Console.Error.WriteLine("Example: llamafu model.bin -n 256 -i \"Once upon a time\"");
 		Console.Error.WriteLine("Options:");
 		Console.Error.WriteLine("  -t <float>  temperature in [0,inf], default 1.0");
 		Console.Error.WriteLine("  -s <int>    random seed");
@@ -25,7 +25,7 @@ public static class Llama2Cli
 		Console.Out.Flush();
 	}
 
-	static void Generate(Llama2! obj, string prompt, int steps)
+	static void Generate(Llama! obj, string prompt, int steps)
 	{
 		obj.SetRawPrompt(true, prompt);
 		long startTime = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
@@ -41,7 +41,7 @@ public static class Llama2Cli
 		Console.Error.WriteLine($"achieved tok/s: {pos * 1000 / time:f1}\n");
 	}
 
-	static void Chat(Llama2! obj, string? prompt, string? systemPrompt, int steps)
+	static void Chat(Llama! obj, string? prompt, string? systemPrompt, int steps)
 	{
 		bool userTurn = true;
 		for (int pos = 0; pos < steps; pos++) {
@@ -124,7 +124,7 @@ public static class Llama2Cli
 			}
 		}
 
-		Llama2() obj;
+		Llama() obj;
 		obj.Load(loader, modelPath, tokenizerPath);
 		obj.SetTemperature(temperature);
 		obj.SetRandomSeed(seed > 0 ? seed : DateTimeOffset.UtcNow.ToUnixTimeMilliseconds());

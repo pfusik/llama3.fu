@@ -5,11 +5,11 @@ EXEEXT = .exe
 CXXFLAGS += -fopenmp -municode
 endif
 
-llama2fu$(EXEEXT): main.cpp llama2cli.cpp
+llamafu$(EXEEXT): main.cpp llamacli.cpp
 	$(CXX) -o $@ $(CXXFLAGS) $^
 
-llama2cli.cpp: ../llama2.fu ../llama2cli.fu
+llamacli.cpp: ../llama.fu ../llamacli.fu
 	fut -o $@ -D OPENMP $^
 
 clean:
-	$(RM) llama2fu$(EXEEXT) llama2cli.cpp llama2cli.hpp
+	$(RM) llamafu$(EXEEXT) llamacli.cpp llamacli.hpp

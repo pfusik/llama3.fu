@@ -1,4 +1,4 @@
-// main.cpp - Llama 2 LLM command-line interface 
+// main.cpp - Llama LLM command-line interface 
 // Copyright (c) 2026 Piotr Fusik
 // SPDX-License-Identifier: MIT
 
@@ -9,7 +9,7 @@
 #include <locale.h>
 #endif
 
-#include "llama2cli.hpp"
+#include "llamacli.hpp"
 
 class CppLoader : public Loader
 {
@@ -84,5 +84,5 @@ int main(int argc, char **argv)
 		args[i - 1] = argv[i];
 #endif
 	CppLoader loader;
-	return Llama2Cli::run(args.get(), argc - 1, &loader);
+	return LlamaCli::run(args.get(), argc - 1, &loader);
 }

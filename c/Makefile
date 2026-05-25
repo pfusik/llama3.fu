@@ -5,11 +5,11 @@ EXEEXT = .exe
 CFLAGS += -fopenmp -municode
 endif
 
-llama2fu$(EXEEXT): main.c llama2cli.c
+llamafu$(EXEEXT): main.c llamacli.c
 	$(CC) -o $@ $(CFLAGS) $^ `pkg-config --cflags --libs glib-2.0`
 
-llama2cli.c: ../llama2.fu ../llama2cli.fu
+llamacli.c: ../llama.fu ../llamacli.fu
 	fut -o $@ -D OPENMP $^
 
 clean:
-	$(RM) llama2fu$(EXEEXT) llama2cli.c llama2cli.h
+	$(RM) llamafu$(EXEEXT) llamacli.c llamacli.h

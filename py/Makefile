@@ -1,5 +1,5 @@
-llama2cli.py: ../llama2.fu ../llama2cli.fu
+llamacli.py: ../llama.fu ../llamacli.fu
 	fut -o $@ $^
 
 clean:
-	$(RM) llama2cli.py
+	$(RM) llamacli.py

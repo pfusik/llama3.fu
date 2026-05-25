@@ -1,4 +1,4 @@
-# llama2fu.py - Llama 2 LLM command-line interface 
+# llamafu.py - Llama LLM command-line interface 
 # Copyright (c) 2026 Piotr Fusik
 # SPDX-License-Identifier: MIT
 
@@ -6,9 +6,9 @@ import array
 import struct
 import sys
 
-import llama2cli
+import llamacli
 
-class PythonLoader(llama2cli.Loader):
+class PythonLoader(llamacli.Loader):
 	def open(self, path: str) -> None:
 		self.f = open(path, "rb")
 
@@ -34,4 +34,4 @@ class PythonLoader(llama2cli.Loader):
 
 if __name__ == "__main__":
 	args = sys.argv[1:]
-	sys.exit(llama2cli.Llama2Cli.run(args, len(args), PythonLoader()))
+	sys.exit(llamacli.LlamaCli.run(args, len(args), PythonLoader()))

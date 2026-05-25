@@ -1,5 +1,5 @@
-llama2cli.js: ../llama2.fu ../llama2cli.fu
+llamacli.js: ../llama.fu ../llamacli.fu
 	fut -o $@ $^
 
 clean:
-	$(RM) llama2cli.js
+	$(RM) llamacli.js

@@ -1,9 +1,9 @@
-// llama2fu.js - Llama 2 LLM command-line interface 
+// llamafu.js - Llama LLM command-line interface 
 // Copyright (c) 2026 Piotr Fusik
 // SPDX-License-Identifier: MIT
 
 import fs from "fs";
-import { Loader, Llama2Cli } from "./llama2cli.js";
+import { Loader, LlamaCli } from "./llamacli.js";
 
 class NodeLoader extends Loader
 {
@@ -53,4 +53,4 @@ class NodeLoader extends Loader
 }
 
 const args = process.argv.slice(2);
-process.exit(Llama2Cli.run(args, args.length, new NodeLoader()));
+process.exit(LlamaCli.run(args, args.length, new NodeLoader()));

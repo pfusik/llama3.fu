@@ -1,4 +1,4 @@
-// llama2.fu - Llama 2 LLM inference in Fusion
+// llama.fu - Llama LLM inference in Fusion
 // Copyright (c) 2023 Andrej (original C code: https://github.com/karpathy/llama2.c)
 // Copyright (c) 2026 Piotr Fusik
 // SPDX-License-Identifier: MIT
@@ -389,14 +389,14 @@ class Sampler
 	}
 }
 
-public class Llama2
+public class Llama
 {
 	Transformer() Trans;
 	Tokenizer() Tok;
 	Sampler() Samp;
 	int Token;
 
-	public Llama2()
+	public Llama()
 	{
 	}
 

@@ -1,4 +1,4 @@
-// Llama2Java - Llama 2 LLM command-line interface 
+// LlamaJava - Llama LLM command-line interface 
 // Copyright (c) 2026 Piotr Fusik
 // SPDX-License-Identifier: MIT
 
@@ -89,10 +89,10 @@ class JavaLoader extends Loader
 	}
 }
 
-public class Llama2Java
+public class LlamaJava
 {
 	public static void main(String[] args)
 	{
-		System.exit(Llama2Cli.run(args, args.length, new JavaLoader()));
+		System.exit(LlamaCli.run(args, args.length, new JavaLoader()));
 	}
 }

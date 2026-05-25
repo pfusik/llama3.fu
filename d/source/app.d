@@ -1,10 +1,10 @@
-// app.d - Llama 2 LLM command-line interface 
+// app.d - Llama LLM command-line interface 
 // Copyright (c) 2026 Piotr Fusik
 // SPDX-License-Identifier: MIT
 
 import std.stdio;
 
-import llama2cli;
+import llamacli;
 
 class DLoader : Loader
 {
@@ -43,5 +43,5 @@ class DLoader : Loader
 
 int main(string[] args)
 {
-	return Llama2Cli.run(args[1 .. $], cast(int) args.length - 1, new DLoader());
+	return LlamaCli.run(args[1 .. $], cast(int) args.length - 1, new DLoader());
 }

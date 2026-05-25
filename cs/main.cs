@@ -1,4 +1,4 @@
-// main.cs - Llama 2 LLM command-line interface 
+// main.cs - Llama LLM command-line interface 
 // Copyright (c) 2026 Piotr Fusik
 // SPDX-License-Identifier: MIT
 
@@ -37,10 +37,10 @@ class DotNetLoader : Loader
 	public override void Close() => BR.Close();
 }
 
-public static class Llama2DotNet
+public static class LlamaDotNet
 {
 	public static int Main(string[] args)
 	{
-		return Llama2Cli.Run(args, args.Length, new DotNetLoader());
+		return LlamaCli.Run(args, args.Length, new DotNetLoader());
 	}
 }

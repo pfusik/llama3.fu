@@ -289,7 +289,7 @@ class Tokenizer
 		for (nint i = 0; i < length; i++) {
 			string() s = text.Substring(i, 1);
 			if (VocabToToken.ContainsKey(s))
-				Prompt.Add(VocabToToken[s]);
+				AddPromptToken(s);
 			else {
 				byte[6] bytes;
 				Encoding.UTF8.GetBytes(s, bytes, 0);

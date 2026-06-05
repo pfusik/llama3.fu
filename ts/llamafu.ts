@@ -7,7 +7,7 @@ import { Loader, LlamaCli } from "./llamacli.ts";
 
 class NodeLoader extends Loader
 {
-	#f: number
+	#f!: number
 
 	open(path: string): void
 	{

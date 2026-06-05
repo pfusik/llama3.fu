@@ -2,7 +2,7 @@
 // Copyright (c) 2026 Piotr Fusik
 // SPDX-License-Identifier: MIT
 
-import fs from "fs";
+import fs from "node:fs";
 import { Loader, LlamaCli } from "./llamacli.js";
 
 class NodeLoader extends Loader

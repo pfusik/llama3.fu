@@ -4,9 +4,9 @@ ifeq ($(OS),Windows_NT)
 EXEEXT = .exe
 endif
 
-all: c cpp cs d java js py ts
+all: c cpp cs d java js py swift ts
 
-c cpp java js py ts:
+c cpp java js py swift ts:
 	$(MAKE) -C $@
 
 cs:
@@ -18,4 +18,4 @@ d:
 float2bf16$(EXEEXT): float2bf16.c
 	$(CC) -o $@ $(CFLAGS) $^
 
-.PHONY: c cpp cs d java js py ts
+.PHONY: c cpp cs d java js py swift ts

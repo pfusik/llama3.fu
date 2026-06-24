@@ -382,7 +382,14 @@ class Sampler
 		state ^= (state & LowBits(39)) << 25;
 		state ^= state >> 27 & LowBits(37);
 		RandomState = state;
-		float f = (state * 0x2545f4914f6cdd1d >> 40) & LowBits(24);
+#if SWIFT
+		native {
+			state &*= 0x2545f4914f6cdd1d;
+		}
+#else
+		state *= 0x2545f4914f6cdd1d;
+#endif
+		float f = state >> 40 & LowBits(24);
 		return f / 16777216;
 	}
 

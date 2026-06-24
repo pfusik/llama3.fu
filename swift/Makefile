@@ -8,7 +8,7 @@ llamafu$(EXEEXT): main.swift llamacli.swift
 	swiftc -o $@ $(SWIFTFLAGS) $^
 
 llamacli.swift: ../llama.fu ../llamacli.fu
-	fut -o $@ $^
+	fut -o $@ -D SWIFT $^
 
 clean:
 	$(RM) llamafu$(EXEEXT) llamacli.swift
